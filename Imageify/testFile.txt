@@ -2,4 +2,4 @@ This contains random data just for the sake of putting data,
 
 so that the file isn't empty.
 
-Let's hope the output is intact.
+Let us hope the output is intact.

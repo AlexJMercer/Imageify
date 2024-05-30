@@ -24,6 +24,9 @@
     <ClCompile Include="write_file.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="processPPM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="testFile.txt" />
@@ -35,8 +38,5 @@
     <ClInclude Include="definitions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
 </Project>
