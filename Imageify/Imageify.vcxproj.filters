@@ -18,13 +18,10 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="read_file.cpp">
+    <ClCompile Include="convertToArray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="write_file.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="processPPM.cpp">
+    <ClCompile Include="arrayToPNG.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -32,10 +29,10 @@
     <Text Include="testFile.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="headers.hpp">
+    <ClInclude Include="headers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="definitions.hpp">
+    <ClInclude Include="definitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
