@@ -1,6 +1,9 @@
 ###############################################################################
 # Set default behavior to automatically normalize line endings.
 ###############################################################################
+
+
+Imageify/libpng/* linguist-vendored
 * text=auto
 
 ###############################################################################
@@ -63,4 +66,3 @@
 #*.RTF   diff=astextplain
 
 
-*.c linguist-ignore
