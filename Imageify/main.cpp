@@ -15,6 +15,14 @@
 * This project uses OpenCV 4 along with libpng
 * 
 * The precompiled libpng headers can be found in the main directory of the project.
+* 
+* This video below provides an excellent walkthrough to compile and assemble libpng
+* https://www.youtube.com/watch?v=IP5oEBCW3J8&ab_channel=Murmelex
+* 
+* And the following GitHub link provides a good template to build your own PNGs
+* I have used the same as boilerplate code.
+*
+* https://github.com/murmelex/libpng-start-project/
 *
 */
 
@@ -57,28 +65,21 @@ void test_OpenCV_Module()
 
 
 
-int main()
+void encode()
 {
-    /*
-     * Uncomment this line and run the program to verify that openCV is properly configured on your system.
-     *
-     * The output will be a PNG Image saved in the same directory as this project.
-    */
-    //test_OpenCV_Module();
-
-
-    
     std::string filepath;
 
     std::pair<size_t, size_t> dimensions;
-    std::vector<short> rawPixelArray;
+    std::vector<int> rawPixelArray;
 
 
     // First, we take input of a file.
-    std::cout << "Enter a file or provide a path to the file\n";
-    std::cin >> filepath;
+    std::cout << "\nEnter a file or provide a path to the file:\n";
+    std::cin >> filepath;// First, we take input of a file.
 
-    // *** Validate filepath
+
+    // TO-DO
+    // Validate filepath
 
     // Now we covert the file into an int vector
     rawPixelArray = convertFileToArray(filepath);
@@ -90,6 +91,72 @@ int main()
 
     // Now convert it to PNG and save it
     convertArrayToPNG(&rawPixelArray, dimensions.first, dimensions.second);
+
+    std::cout << "\nFile saved successfully !";
+}
+
+
+
+void decode()
+{
+    std::string imagePath;
+    png_byte** row_ptr = NULL;
+
+    std::cout << "\nEnter a file or provide a path to the file:\n";
+    std::cin >> imagePath;
+
+    convertPNGToArray( imagePath.data() );
+
+}
+
+
+
+int main()
+{
+    char choice;
+
+    do
+    {
+        std::cout << std::endl;
+        std::cout << "*********** Imageify ***********" << std::endl;
+
+        std::cout << "\n1. Encode Text File to Image";
+        std::cout << "\n2. Decode Image to Text File";
+        std::cout << "\n3. Test OpenCV";
+        std::cout << "\n4. Exit";
+        std::cout << "\nEnter your choice: ";
+
+        std::cin >> choice;
+
+        // Menu choice
+        switch (choice)
+        {
+            case '1':
+                encode();
+                break;
+            
+            case '2':
+                decode();
+                break;
+            
+            case '3':
+                /*
+                 * Run the program to verify that openCV is properly configured on your system.
+                 *
+                 * The output will be a PNG Image saved in the same directory as this project.
+                */
+                test_OpenCV_Module();                
+                break;
+            
+            case '4':
+                break;
+            
+            default:
+                std::cout << "Invalid choice. Enter again!\n";
+                break;
+        }
+    } while (choice != '4');
+
 }
 
 

@@ -10,18 +10,21 @@ std::pair<size_t, size_t> getDimensions(size_t size)
 	size_t rowCount = column_count + 1;
 	size_t leftover = column_count * rowCount - size;
 
+	//std::cout << "Row: " << rowCount;
+	//std::cout << "Size: " << column_count;
+
 	return std::make_pair(rowCount, column_count);
 }
 
 
 
-std::vector<short> convertFileToArray(std::string filepath)
+std::vector<int> convertFileToArray(std::string filepath)
 {
-	std::vector<short> pixelArray;
+	std::vector<int> pixelArray;
 
 	// First validate and separate filename from filepath if required
 	std::string fileName;
-	short byte = 0;
+	char byte;
 
 	fileName = filepath;	// Temporary
 
@@ -31,7 +34,7 @@ std::vector<short> convertFileToArray(std::string filepath)
 	// Output to console first
 	if (File.is_open())
 	{
-		while (File.read(reinterpret_cast<char*>(&byte), sizeof(byte)))
+		while (File.read(&byte, sizeof(byte)))
 		{
 			/*
 			 * The Integer values will always be a minimum of 32 (which is SPACE)
@@ -40,10 +43,10 @@ std::vector<short> convertFileToArray(std::string filepath)
 			 * the correct text information.
 			*/
 
-			//std::cout << (short)byte << std::endl;
+			//std::cout << byte << std::endl;
 
 			// Push to array
-			pixelArray.push_back( static_cast<short>(byte) - OFFSET_CIPHER);
+			pixelArray.push_back( static_cast<int>(byte) - OFFSET_CIPHER);
 		}
 	}
 	else

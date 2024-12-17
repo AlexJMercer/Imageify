@@ -24,6 +24,9 @@
     <ClCompile Include="arrayToPNG.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pngToArray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="testFile.txt" />
@@ -33,6 +36,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="definitions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pngHeaders.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,13 +1,6 @@
 
-#define _CRT_SECURE_NO_DEPRECATE
 
-
-#include <stdio.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-
-#include <png.h>
+#include "pngHeaders.h"
 
 #include "definitions.h"
 
@@ -27,9 +20,6 @@ int save_png_to_file(bitmap_t* bitmap, const char* path)
     png_structp png_ptr = NULL;
     png_infop info_ptr = NULL;
     png_byte** row_pointers = NULL;
-
-    int pixel_size = 3;
-    int depth = 8;
 
     fp = fopen(path, "wb");
     if (!fp) {
@@ -58,11 +48,12 @@ int save_png_to_file(bitmap_t* bitmap, const char* path)
         info_ptr,
         bitmap->width,
         bitmap->height,
-        depth,
-        PNG_COLOR_TYPE_RGBA,
+        DEPTH,
+        PNG_COLOR_TYPE_RGB,
         PNG_INTERLACE_NONE,
         PNG_COMPRESSION_TYPE_DEFAULT,
-        PNG_FILTER_TYPE_DEFAULT);
+        PNG_FILTER_TYPE_DEFAULT
+    );
 
 
     row_pointers = static_cast<png_byte**>(png_malloc(png_ptr, bitmap->height * sizeof(png_byte*)));
@@ -70,7 +61,7 @@ int save_png_to_file(bitmap_t* bitmap, const char* path)
     for (size_t y = 0; y < bitmap->height; ++y) {
 
         png_byte* row = static_cast<png_byte*>(
-            png_malloc(png_ptr, sizeof(uint8_t) * bitmap->width * pixel_size));
+            png_malloc(png_ptr, sizeof(uint8_t) * bitmap->width * PIXEL_SIZE));
 
         row_pointers[y] = row;
 
@@ -95,12 +86,14 @@ int save_png_to_file(bitmap_t* bitmap, const char* path)
     png_free(png_ptr, row_pointers);
 
     png_destroy_write_struct(&png_ptr, &info_ptr);
+
     fclose(fp);
+
     return 0;
 }
 
 
-void convertArrayToPNG(std::vector<short> *pixelArr, size_t height, size_t width)
+void convertArrayToPNG(std::vector<int> *pixelArr, size_t height, size_t width)
 {
     bitmap_t png_img;
 
@@ -108,6 +101,7 @@ void convertArrayToPNG(std::vector<short> *pixelArr, size_t height, size_t width
     png_img.height = height;
 
     png_img.pixels = static_cast<pixel_t*>(calloc(sizeof(pixel_t), png_img.width * png_img.height));
+
 
     int iter = 0;           // Will be used to iterate the pixelArr
 
@@ -122,7 +116,9 @@ void convertArrayToPNG(std::vector<short> *pixelArr, size_t height, size_t width
         }
     }
 
-    save_png_to_file(&png_img, "output_image.png");
+    int returnFlag = save_png_to_file(&png_img, "output_image.png");
+    if (returnFlag == -1)
+        std::cout << "\nERROR: File could not be saved.\n";
 
     free(png_img.pixels);
 }

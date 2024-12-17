@@ -1,7 +1,7 @@
 
 #include <vector>
 #include <string>
-
+#include <png.h>
 
 
 // Class Definitons
@@ -24,10 +24,13 @@ struct bitmap_t {
 
 // Function Definitions
 
-std::vector<short> convertFileToArray(std::string);
+std::vector<int> convertFileToArray(std::string);
 
 std::pair<size_t, size_t> getDimensions(size_t);
 
 int save_png_to_file(bitmap_t*, const char*);
 
-void convertArrayToPNG(std::vector<short> *, size_t, size_t);
+void convertArrayToPNG(std::vector<int> *, size_t, size_t);
+
+
+void convertPNGToArray(char *);

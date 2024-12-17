@@ -151,6 +151,7 @@
     <ClCompile Include="main.cpp">
       <DeploymentContent>false</DeploymentContent>
     </ClCompile>
+    <ClCompile Include="pngToArray.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="testFile.txt" />
@@ -158,6 +159,7 @@
   <ItemGroup>
     <ClInclude Include="definitions.h" />
     <ClInclude Include="headers.h" />
+    <ClInclude Include="pngHeaders.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
