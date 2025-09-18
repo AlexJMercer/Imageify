@@ -12,7 +12,7 @@
 
 
 /*
-* This project uses OpenCV 4 along with libpng
+* This project uses libpng
 * 
 * The precompiled libpng headers can be found in the main directory of the project.
 * 
@@ -26,44 +26,13 @@
 *
 */
 
+#include <iostream>
+#include <vector>
 
-#include "headers.h"
-
-
-
-
-void test_OpenCV_Module()
-{
-    cv::Mat image = cv::Mat::zeros(400, 400, CV_8UC3);
-    image.setTo(cv::Scalar(255, 255, 255));
-
-    // Draw a blue circle at the center of the image
-    cv::circle(image, cv::Point(200, 200), 50, cv::Scalar(255, 0, 0), -1);
-
-    // Draw a green rectangle
-    cv::rectangle(image, cv::Point(50, 50), cv::Point(350, 350), cv::Scalar(0, 255, 0), 3);
-
-    // Draw a red line
-    cv::line(image, cv::Point(50, 350), cv::Point(350, 50), cv::Scalar(0, 0, 255), 2);
-
-    // Put some text on the image
-    cv::putText(image, "OpenCV Test", cv::Point(100, 390), cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 0), 2);
-
-    // Display the image in a window
-    cv::imshow("OpenCV Test", image);
-    cv::waitKey(0); // Wait for a key press
-
-    // Save the image to a file
-    std::string outputFileName = "opencv_test_output.png";
-    if (cv::imwrite(outputFileName, image)) {
-        std::cout << "Image saved successfully: " << outputFileName << std::endl;
-    }
-    else {
-        std::cerr << "Failed to save the image" << std::endl;
-    }
-}
+#include "PNGManip.hpp"
 
 
+/*
 
 void encode()
 {
@@ -100,63 +69,110 @@ void encode()
 void decode()
 {
     std::string imagePath;
-    png_byte** row_ptr = NULL;
 
     std::cout << "\nEnter a file or provide a path to the file:\n";
     std::cin >> imagePath;
 
-    convertPNGToArray( imagePath.data() );
+    std::vector<int> pixelArray = convertPNGToArray( imagePath.data() );
 
+    if ( pixelArray.size() == 0 )
+    {
+        std::cout << "\nERROR: Cannot decode image.\n";
+        return;
+	}
+
+    for ( int val : pixelArray )
+        std::cout << (char)val;
+
+	std::cout << "\n\nImage decoded successfully !\n";
+
+}
+*/
+
+
+static inline void printHelp()
+{
+    std::cout << "Usage: Imageify.exe [OPTIONS]\n"
+        << "Options:\n"
+        << "\t-h\t\t--help\t\t<Show Help Menu>\n"
+        << "\t-e\t\t--encode\t\t<Path to Text File>\n"
+        << "\t-d\t\t--decode\t\t<Path to PNG image>\n"
+        << "\t-o\t\t--output\t\t<Name of Output File>\n";
 }
 
 
 
-int main()
+static std::vector<std::string> parseArguments(int argc, char* argv[])
 {
-    char choice;
+    std::string type, inputFile, outputFile;
 
-    do
+
+    for (int i = 1; i < argc; ++i)
     {
-        std::cout << std::endl;
-        std::cout << "*********** Imageify ***********" << std::endl;
-
-        std::cout << "\n1. Encode Text File to Image";
-        std::cout << "\n2. Decode Image to Text File";
-        std::cout << "\n3. Test OpenCV";
-        std::cout << "\n4. Exit";
-        std::cout << "\nEnter your choice: ";
-
-        std::cin >> choice;
-
-        // Menu choice
-        switch (choice)
+        if ((std::strcmp(argv[i], "-e") == 0 || std::strcmp(argv[i], "--encode") == 0) && i + 1 < argc)
         {
-            case '1':
-                encode();
-                break;
-            
-            case '2':
-                decode();
-                break;
-            
-            case '3':
-                /*
-                 * Run the program to verify that openCV is properly configured on your system.
-                 *
-                 * The output will be a PNG Image saved in the same directory as this project.
-                */
-                test_OpenCV_Module();                
-                break;
-            
-            case '4':
-                break;
-            
-            default:
-                std::cout << "Invalid choice. Enter again!\n";
-                break;
-        }
-    } while (choice != '4');
+            inputFile = argv[++i];
+			type = "encode";
 
+        }
+        else if ((std::strcmp(argv[i], "-d") == 0 || std::strcmp(argv[i], "--decode") == 0) && i + 1 < argc)
+        {
+            inputFile = argv[++i];
+			type = "decode";
+        }
+
+        else if ((std::strcmp(argv[i], "-o") == 0 || std::strcmp(argv[i], "--output") == 0) && i + 1 < argc)
+            outputFile = argv[++i];
+
+        else
+        {
+            printHelp();
+            return {};
+        }
+    }
+
+	// Default values if not provided
+
+	// Default to testFile.txt if no input file is provided while encoding process
+    if (inputFile.empty() && type == "encode")
+		inputFile = "testFile.txt";
+    
+	// Default to outputImage.png if no input file is provided while decoding process
+    else if (inputFile.empty() && type == "decode")
+		inputFile = "outputImage.png";
+
+    
+	// Default to outputImage.png if no output file is provided while encoding process
+    if (outputFile.empty() && type == "encode")
+		outputFile = "outputImage.png";
+
+    // Default to outputText.txt if no output file is provided while decoding process
+	else if (outputFile.empty() && type == "decode")
+		outputFile = "outputText.txt";
+
+    return {type, inputFile, outputFile};
+}
+
+
+
+int main(int argc, char* argv[])
+{
+	std::vector<std::string> args = parseArguments(argc, argv);
+
+    if (args.size() == 0)
+		return EXIT_FAILURE;
+
+    PNGManip pngProcessor(args[1], args[2]);
+
+    if (args[0] == "encode")
+        pngProcessor.encode();
+	
+    else if (args[0] == "decode")
+        pngProcessor.decode();
+    
+
+
+    return EXIT_SUCCESS;
 }
 
 
