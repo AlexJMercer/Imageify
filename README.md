@@ -1,4 +1,4 @@
-<h1><center>📝 Imageify 🖼️</center></h1>
+<h1 align="center">📝 Imageify 🖼️</h1>
 
 ## Introduction
 
