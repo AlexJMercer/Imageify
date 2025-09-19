@@ -150,6 +150,7 @@ static std::vector<std::string> parseArguments(int argc, char* argv[])
 	else if (outputFile.empty() && type == "decode")
 		outputFile = "outputText.txt";
 
+    std::cout << type << " " << inputFile << " " << outputFile << std::endl;
     return {type, inputFile, outputFile};
 }
 

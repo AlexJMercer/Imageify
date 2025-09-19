@@ -4,17 +4,83 @@
 * Private Functions ----------------------------------
 */
 
+void PNGManip::encodeToImage()
+{
+	// Encoding logic goes here
+	FILE* inputFilePtr = fopen(inputFile.c_str(), "rb");
+	if (!inputFilePtr)
+	{
+		std::cout << "\nERROR: Cannot open input file.\n";
+		return;
+	}
+
+	auto readByte = [&]() -> uint8_t {
+		int byte = fgetc(inputFilePtr);
+		return (byte == EOF) ? 0x1D : static_cast<uint8_t>(byte);
+	};
+
+	for (size_t row = 0; row < pngImage.height; ++row)
+	{
+		for (size_t col = 0; col < pngImage.width; ++col)
+		{
+			pixel			=	pixelAt(&pngImage, row, col);
+
+			pixel->red		=	readByte();
+			pixel->green	=	readByte();
+			pixel->blue		=	readByte();
+			pixel->alpha	=	readByte();
+
+			//std::cout << pixel->red << " " << pixel->green << " " << pixel->blue << " " << pixel->alpha << "\n";
+		}
+	}
+
+	//std::cout << "Closing file\n";
+	fclose(inputFilePtr);
+}
+
+
 
 std::pair<size_t, size_t> PNGManip::getDimensions(size_t size)
 {
 	// Find the next closest perfect square
-	size_t row = static_cast<size_t>(std::sqrt(size));
+	size_t dimension = size / 4;
 
-	while (size % row)
-		--row;
+	if (size % 4)
+		dimension += 1;
 
-	return std::make_pair(row , size / row);
+	// Make it even
+	if (dimension % 2)
+		dimension++;
+
+	size_t row = static_cast<size_t>(std::sqrt(dimension));
+
+	if (row * row < dimension)
+		row++;
+
+	size_t column = (dimension + row - 1) / row;
+
+	return std::make_pair(row, column);
 }
+
+
+
+size_t PNGManip::getFileSize(const char* filePath)
+{
+	FILE* file = fopen(filePath, "rb");
+	
+	if (!file)
+		return 0;
+	
+	fseek(file, 0, SEEK_END);
+	size_t size = ftell(file);
+
+	//std::cout << "Size: " << size << std::endl;
+	
+	fclose(file);
+	
+	return size;
+}
+
 
 
 inline pixel_t* PNGManip::pixelAt(bitmap_t* bitmap, size_t row, size_t col)
@@ -23,10 +89,10 @@ inline pixel_t* PNGManip::pixelAt(bitmap_t* bitmap, size_t row, size_t col)
 }
 
 
-int PNGManip::savePNGToFile(bitmap_t* bitmap, const char* output)
+int PNGManip::savePNGToFile(bitmap_t* bitmap)
 {
 	// Initialize File Pointer to write to output
-	FILE* filePtr = fopen(output, "wb");
+	FILE* filePtr = fopen(outputFile.c_str(), "wb");
 	
 	if (!filePtr)
 		return -1;
@@ -121,14 +187,23 @@ int PNGManip::savePNGToFile(bitmap_t* bitmap, const char* output)
 PNGManip::PNGManip(const std::string& input, const std::string& output) : 
 	inputFile(input), 
 	outputFile(output),
+	inputFileSize( getFileSize(input.c_str()) ),
 	pixel(),
 	pngImage()
 {
-	pngImage.width = 50;
-	pngImage.height = 50;
+	auto dimensions = getDimensions( inputFileSize );
+	pngImage.width = static_cast<uint16_t>(dimensions.first);
+	pngImage.height = static_cast<uint16_t>(dimensions.second);
+
+	std::cout << "Dimensions: " << pngImage.width << "*" << pngImage.height << std::endl;
+
 	pngImage.pixelSize = 4;
 	pngImage.pixelDepth = 8;
-	pngImage.pixels = static_cast<pixel_t*>(calloc(sizeof(pixel_t), pngImage.width * pngImage.height));
+	pngImage.pixels = static_cast<pixel_t*>(
+		calloc(sizeof(pixel_t), 
+		static_cast<size_t>(pngImage.width * pngImage.height)
+		)
+	);
 }
 
 
@@ -136,21 +211,9 @@ PNGManip::PNGManip(const std::string& input, const std::string& output) :
 
 void PNGManip::encode()
 {
-	// Encoding logic goes here
-	for (size_t row = 0; row < pngImage.height; ++row)
-	{
-		for (size_t col = 0; col < pngImage.width; ++col)
-		{
-			pixel = pixelAt(&pngImage, row, col);
-			
-			pixel->red = static_cast<uint8_t>((col + 80) % 170);
-			pixel->green = static_cast<uint8_t>((col + 11) % 120);
-			pixel->blue = static_cast<uint8_t>((row + 30) % 255);
-			pixel->alpha = static_cast<uint8_t>((row * 4) % 255);
-		}
-	}
+	encodeToImage();
 
-	int error = savePNGToFile(&pngImage, outputFile.c_str());
+	int error = savePNGToFile(&pngImage);
 	if (error)
 		std::cout << "\nERROR: Cannot encode image.\n";
 	else

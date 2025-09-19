@@ -43,12 +43,17 @@ class PNGManip
 {
 private:
 	
+	size_t inputFileSize;
 	const std::string inputFile, outputFile;
 
 	bitmap_t pngImage;
 	pixel_t* pixel;
 	
 	
+	/**
+	* @brief Function to insert information into the pixel of the image
+	*/
+	void encodeToImage();
 
 	/**
 	* @brief Returns a pointer to the pixel at the specified row and column in the bitmap.
@@ -58,18 +63,23 @@ private:
 	/**
 	* @brief Saves the PNG image to the specified output file.
 	*/
-	int savePNGToFile(bitmap_t*, const char*);
+	int savePNGToFile(bitmap_t*);
 
 	/**
 	* @brief Function to calculate the ideal dimension for the PNG Image
 	*/
 	std::pair<size_t, size_t> getDimensions(size_t);
 
+	/**
+	* @brief Returns the size of the file at the given path.
+	*/
+	size_t getFileSize(const char*);
+
 public:
 	/**
 	* @brief Constructor for PNGManip class.
 	*/
-	PNGManip(const std::string&, const std::string& );
+	PNGManip(const std::string&, const std::string&);
 
 	~PNGManip() = default;
 
