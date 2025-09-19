@@ -32,63 +32,6 @@
 #include "PNGManip.hpp"
 
 
-/*
-
-void encode()
-{
-    std::string filepath;
-
-    std::pair<size_t, size_t> dimensions;
-    std::vector<int> rawPixelArray;
-
-
-    // First, we take input of a file.
-    std::cout << "\nEnter a file or provide a path to the file:\n";
-    std::cin >> filepath;// First, we take input of a file.
-
-
-    // TO-DO
-    // Validate filepath
-
-    // Now we covert the file into an int vector
-    rawPixelArray = convertFileToArray(filepath);
-
-
-    // Get Dimensions of the Image we are going to create
-    dimensions = getDimensions(rawPixelArray.size());
-
-
-    // Now convert it to PNG and save it
-    convertArrayToPNG(&rawPixelArray, dimensions.first, dimensions.second);
-
-    std::cout << "\nFile saved successfully !";
-}
-
-
-
-void decode()
-{
-    std::string imagePath;
-
-    std::cout << "\nEnter a file or provide a path to the file:\n";
-    std::cin >> imagePath;
-
-    std::vector<int> pixelArray = convertPNGToArray( imagePath.data() );
-
-    if ( pixelArray.size() == 0 )
-    {
-        std::cout << "\nERROR: Cannot decode image.\n";
-        return;
-	}
-
-    for ( int val : pixelArray )
-        std::cout << (char)val;
-
-	std::cout << "\n\nImage decoded successfully !\n";
-
-}
-*/
-
 
 static inline void printHelp()
 {
@@ -112,13 +55,13 @@ static std::vector<std::string> parseArguments(int argc, char* argv[])
         if ((std::strcmp(argv[i], "-e") == 0 || std::strcmp(argv[i], "--encode") == 0) && i + 1 < argc)
         {
             inputFile = argv[++i];
-			type = "encode";
+			type = "ENCODE";
 
         }
         else if ((std::strcmp(argv[i], "-d") == 0 || std::strcmp(argv[i], "--decode") == 0) && i + 1 < argc)
         {
             inputFile = argv[++i];
-			type = "decode";
+			type = "DECODE";
         }
 
         else if ((std::strcmp(argv[i], "-o") == 0 || std::strcmp(argv[i], "--output") == 0) && i + 1 < argc)
@@ -134,43 +77,50 @@ static std::vector<std::string> parseArguments(int argc, char* argv[])
 	// Default values if not provided
 
 	// Default to testFile.txt if no input file is provided while encoding process
-    if (inputFile.empty() && type == "encode")
+    if (inputFile.empty() && type == "ENCODE")
 		inputFile = "testFile.txt";
     
 	// Default to outputImage.png if no input file is provided while decoding process
-    else if (inputFile.empty() && type == "decode")
+    else if (inputFile.empty() && type == "DECODE")
 		inputFile = "outputImage.png";
 
     
 	// Default to outputImage.png if no output file is provided while encoding process
-    if (outputFile.empty() && type == "encode")
+    if (outputFile.empty() && type == "ENCODE")
 		outputFile = "outputImage.png";
 
     // Default to outputText.txt if no output file is provided while decoding process
-	else if (outputFile.empty() && type == "decode")
+	else if (outputFile.empty() && type == "DECODE")
 		outputFile = "outputText.txt";
 
-    std::cout << type << " " << inputFile << " " << outputFile << std::endl;
-    return {type, inputFile, outputFile};
+    // Display chosen options
+    std::cout << "\n[INFO] Chosen options:\n" 
+        << "Process Type:\t\t" << type << "\n"
+        << "Path to Input File:\t" << inputFile << "\n"
+        << "Path to Output File:\t" << outputFile << "\n"
+        << std::endl;
+
+
+    return { type, inputFile, outputFile };
 }
 
 
 
 int main(int argc, char* argv[])
 {
+    if (argc < 2)
+    {
+        printHelp();
+        return EXIT_SUCCESS;
+	}
+
 	std::vector<std::string> args = parseArguments(argc, argv);
 
     if (args.size() == 0)
 		return EXIT_FAILURE;
 
-    PNGManip pngProcessor(args[1], args[2]);
-
-    if (args[0] == "encode")
-        pngProcessor.encode();
-	
-    else if (args[0] == "decode")
-        pngProcessor.decode();
-    
+    PNGManip pngProcessor(args[0], args[1], args[2]);
+    pngProcessor.startProcess();
 
 
     return EXIT_SUCCESS;

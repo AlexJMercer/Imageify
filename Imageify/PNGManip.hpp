@@ -43,17 +43,24 @@ class PNGManip
 {
 private:
 	
-	size_t inputFileSize;
-	const std::string inputFile, outputFile;
+	const std::string processType, inputFile, outputFile;
 
 	bitmap_t pngImage;
 	pixel_t* pixel;
+
+	// For Timing
+	std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
 	
 	
 	/**
 	* @brief Function to insert information into the pixel of the image
 	*/
 	void encodeToImage();
+
+	/**
+	* @brief Function to decode image, i.e., extract information from the pixel of the image
+	*/
+	void decodeImage();
 
 	/**
 	* @brief Returns a pointer to the pixel at the specified row and column in the bitmap.
@@ -63,7 +70,7 @@ private:
 	/**
 	* @brief Saves the PNG image to the specified output file.
 	*/
-	int savePNGToFile(bitmap_t*);
+	int savePNGToFile();
 
 	/**
 	* @brief Function to calculate the ideal dimension for the PNG Image
@@ -75,14 +82,10 @@ private:
 	*/
 	size_t getFileSize(const char*);
 
-public:
 	/**
-	* @brief Constructor for PNGManip class.
+	* @brief Reads and retrieves details from the PNG image file.
 	*/
-	PNGManip(const std::string&, const std::string&);
-
-	~PNGManip() = default;
-
+	int saveDecodedPNGInfo();
 
 	/**
 	* @brief Encodes the input file into a PNG image and saves it to the output file.
@@ -93,7 +96,15 @@ public:
 	* @brief Decodes the PNG image from the input file and extracts the pixel data.
 	*/
 	void decode();
-};
 
+public:
+	/**
+	* @brief Constructor for PNGManip class.
+	*/
+	PNGManip(const std::string&, const std::string&, const std::string&);
+	~PNGManip();
+
+	void startProcess();
+};
 
 #endif // !_PNGMANIP_H_
