@@ -35,19 +35,21 @@
 
 static inline void printHelp()
 {
-    std::cout << "Usage: Imageify.exe [OPTIONS]\n"
+    std::cout << "Convert any Text file into a PNG image and back !\n"
+        << "Usage: Imageify.exe [OPTIONS]\n"
         << "Options:\n"
-        << "\t-h\t\t--help\t\t<Show Help Menu>\n"
+        << "\t-h\t\t--help  \t\t<Show Help Menu>\n"
         << "\t-e\t\t--encode\t\t<Path to Text File>\n"
         << "\t-d\t\t--decode\t\t<Path to PNG image>\n"
-        << "\t-o\t\t--output\t\t<Name of Output File>\n";
+        << "\t-o\t\t--output\t\t<Name of Output File>\n"
+        << "\t-s\t\t--show  \t\t<Show Decoded Text in Terminal>\n";
 }
 
 
 
 static std::vector<std::string> parseArguments(int argc, char* argv[])
 {
-    std::string type, inputFile, outputFile;
+    std::string type, inputFile, outputFile, showDecoded = "FALSE";
 
 
     for (int i = 1; i < argc; ++i)
@@ -62,6 +64,10 @@ static std::vector<std::string> parseArguments(int argc, char* argv[])
         {
             inputFile = argv[++i];
 			type = "DECODE";
+        }
+        else if ((std::strcmp(argv[i], "-s") == 0 || std::strcmp(argv[i], "--show") == 0) && i + 1 < argc)
+        {
+			showDecoded = "TRUE";
         }
 
         else if ((std::strcmp(argv[i], "-o") == 0 || std::strcmp(argv[i], "--output") == 0) && i + 1 < argc)
@@ -95,13 +101,14 @@ static std::vector<std::string> parseArguments(int argc, char* argv[])
 
     // Display chosen options
     std::cout << "\n[INFO] Chosen options:\n" 
-        << "Process Type:\t\t" << type << "\n"
-        << "Path to Input File:\t" << inputFile << "\n"
-        << "Path to Output File:\t" << outputFile << "\n"
+        << "Process Type        :\t" << type << "\n"
+        << "Path to Input File  :\t" << inputFile << "\n"
+        << "Path to Output File :\t" << outputFile << "\n"
+        << "Show decoded text?  :\t" << showDecoded << "\n"
         << std::endl;
 
 
-    return { type, inputFile, outputFile };
+    return { type, inputFile, outputFile, showDecoded };
 }
 
 
@@ -119,7 +126,7 @@ int main(int argc, char* argv[])
     if (args.size() == 0)
 		return EXIT_FAILURE;
 
-    PNGManip pngProcessor(args[0], args[1], args[2]);
+    PNGManip pngProcessor(args[0], args[1], args[2], args[3]);
     pngProcessor.startProcess();
 
 

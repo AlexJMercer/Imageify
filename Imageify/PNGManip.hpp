@@ -3,6 +3,7 @@
 
 
 #include "pngHeaders.h"
+#include "ErrorHandling.hpp"
 
 
 // Define structs for pixel and bitmap
@@ -43,7 +44,7 @@ class PNGManip
 {
 private:
 	
-	const std::string processType, inputFile, outputFile;
+	const std::string processType, inputFile, outputFile, terminalOutput;
 
 	bitmap_t pngImage;
 	pixel_t* pixel;
@@ -55,12 +56,12 @@ private:
 	/**
 	* @brief Function to insert information into the pixel of the image
 	*/
-	void encodeToImage();
+	PNGManipErrorCode encodeToImage();
 
 	/**
 	* @brief Function to decode image, i.e., extract information from the pixel of the image
 	*/
-	void decodeImage();
+	PNGManipErrorCode decodeImage();
 
 	/**
 	* @brief Returns a pointer to the pixel at the specified row and column in the bitmap.
@@ -70,7 +71,7 @@ private:
 	/**
 	* @brief Saves the PNG image to the specified output file.
 	*/
-	int savePNGToFile();
+	PNGManipErrorCode savePNGToFile();
 
 	/**
 	* @brief Function to calculate the ideal dimension for the PNG Image
@@ -83,9 +84,14 @@ private:
 	size_t getFileSize(const char*);
 
 	/**
+	* @brief Returns the file extension of the given filename
+	*/
+	std::string getFileExtension(const std::string&);
+
+	/**
 	* @brief Reads and retrieves details from the PNG image file.
 	*/
-	int saveDecodedPNGInfo();
+	PNGManipErrorCode saveDecodedPNGInfo();
 
 	/**
 	* @brief Encodes the input file into a PNG image and saves it to the output file.
@@ -97,11 +103,15 @@ private:
 	*/
 	void decode();
 
+	// File validation helpers
+	PNGManipErrorCode validateInputFile() const;
+	PNGManipErrorCode validateOutputFile() const;
+
 public:
 	/**
 	* @brief Constructor for PNGManip class.
 	*/
-	PNGManip(const std::string&, const std::string&, const std::string&);
+	PNGManip(const std::string&, const std::string&, const std::string&, const std::string&);
 	~PNGManip();
 
 	void startProcess();
