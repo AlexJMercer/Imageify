@@ -24,13 +24,13 @@ struct alignas(4) pixel_t
 */
 struct alignas(16) bitmap_t
 {
-	pixel_t* pixels;
-	
 	uint16_t width;
 	uint16_t height;
 	
-	uint8_t pixelSize;
-	uint8_t pixelDepth;
+	png_byte pixelSize;
+	png_byte pixelDepth;
+	
+	std::vector<pixel_t> pixels;
 };
 
 
