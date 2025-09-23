@@ -103,7 +103,9 @@ private:
 	*/
 	void decode();
 
-	// File validation helpers
+	/**
+	* @brief Validates the input file for existence and readability.
+	*/
 	PNGManipErrorCode validateInputFile() const;
 	PNGManipErrorCode validateOutputFile() const;
 
@@ -112,7 +114,7 @@ public:
 	* @brief Constructor for PNGManip class.
 	*/
 	PNGManip(const std::string&, const std::string&, const std::string&, const std::string&);
-	~PNGManip();
+	~PNGManip() = default;
 
 	void startProcess();
 };

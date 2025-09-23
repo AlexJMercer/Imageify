@@ -7,8 +7,10 @@
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
+
 #include <stdlib.h>
 #include <stdint.h>
+
 #include <chrono>
 
 #include <png.h>

@@ -360,8 +360,12 @@ PNGManipErrorCode PNGManip::saveDecodedPNGInfo()
                     break;
             }
         }
+
+        fwrite(outputStr.data(), 1, outputStr.size(), outputFilePtr);
+		fclose(outputFilePtr);
+
     }
-    else if (getFileExtension(outputFile) == "pdf")
+    else if (getFileExtension(outputFile) == "pdf" )
     {
         for (size_t row = 0; row < pngImage.height; ++row)
         {
@@ -375,7 +379,61 @@ PNGManipErrorCode PNGManip::saveDecodedPNGInfo()
                 outputStr.push_back(static_cast<char>(pixel->alpha));
             }
         }
-    }
+
+        fwrite(outputStr.data(), 1, outputStr.size(), outputFilePtr);
+		fclose(outputFilePtr);
+
+    }/*
+    else if ( getFileExtension(outputFile) == "docx" )
+    {
+        std::vector<char> docxBuffer;
+
+        for (size_t row = 0; row < pngImage.height; ++row)
+        {
+            for (size_t col = 0; col < pngImage.width; ++col)
+            {
+                pixel = pixelAt(&pngImage, row, col);
+
+                docxBuffer.push_back(static_cast<char>(pixel->red));
+                docxBuffer.push_back(static_cast<char>(pixel->green));
+                docxBuffer.push_back(static_cast<char>(pixel->blue));
+                docxBuffer.push_back(static_cast<char>(pixel->alpha));
+            }
+        }
+
+
+        auto findEOCD = [&](const std::vector<char>& buffer) -> size_t {
+            std::vector<char> eocdSignature = { 0x50, 0x4b, 0x05, 0x06 };
+
+            for (size_t i = buffer.size() > 22 ? buffer.size() - 22 : 0; i < buffer.size() - 3; ++i)
+            {
+                if (std::equal(eocdSignature.begin(), eocdSignature.end(), buffer.begin() + i)) {
+                    return i + 22;
+                }
+            }
+            return 0;
+        };
+
+
+		// Print last 50 bytes from docxBuffer for debugging
+		if (docxBuffer.size() >= 50) {
+			std::cout << "\n\033[33m[DEBUG] Last 50 bytes of decoded DOCX data:\n";
+            for (size_t i = docxBuffer.size() - 50; i < docxBuffer.size(); ++i) {
+                printf("%02X ", static_cast<unsigned char>(docxBuffer[i]));
+			}
+			std::cout << "\n\033[0m";
+        }
+		//fwrite(docxBuffer.data(), 1, docxBuffer.size(), outputFilePtr);
+
+
+   //     size_t endPos = findEOCD(docxBuffer);
+
+   //     if (!endPos)
+			//endPos = docxBuffer.size();
+
+   //     fwrite(docxBuffer.data(), 1, endPos, outputFilePtr);
+		fclose(outputFilePtr);
+    }*/
     else
     {
         logError("Unsupported output file format. Please use .txt or .pdf extension.");
@@ -383,12 +441,11 @@ PNGManipErrorCode PNGManip::saveDecodedPNGInfo()
         return PNGManipErrorCode::FileNotWritable;
 	}
     
-    fwrite(outputStr.data(), 1, outputStr.size(), outputFilePtr);
+    
     
     if (terminalOutput == "TRUE")
         std::cout << "\nDecoded Output:\n" << outputStr << std::endl;
     
-    fclose(outputFilePtr);
     
     return PNGManipErrorCode::Success;
 }
@@ -508,11 +565,11 @@ PNGManip::PNGManip(const std::string& type, const std::string& input, const std:
 
 
 
-PNGManip::~PNGManip()
-{
-	if (pngImage.pixels)
-		free(pngImage.pixels);
-}
+//PNGManip::~PNGManip()
+//{
+//	if (pngImage.pixels)
+//		free(pngImage.pixels);
+//}
 
 
 
