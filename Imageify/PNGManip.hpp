@@ -44,6 +44,7 @@ class PNGManip
 {
 private:
 	
+	uint32_t m_fileSize;
 	const std::string processType, inputFile, outputFile, terminalOutput;
 
 	bitmap_t pngImage;

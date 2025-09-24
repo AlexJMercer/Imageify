@@ -52,7 +52,7 @@ std::pair<size_t, size_t> PNGManip::getDimensions(size_t size)
     if (dimension % 2)
         dimension++;
 
-    size_t row = static_cast<size_t>(std::sqrt(dimension));
+    size_t row = static_cast<size_t>( std::sqrt(dimension) );
 
     if (row * row < dimension)
         row++;
@@ -67,12 +67,14 @@ std::pair<size_t, size_t> PNGManip::getDimensions(size_t size)
 
 size_t PNGManip::getFileSize(const char* filePath)
 {
-    FILE* file = fopen(filePath, "rb");
-    if (!file)
+    std::unique_ptr<FILE, decltype(&fclose)> filePtr( fopen(filePath, "rb"), &fclose);
+    if (!filePtr)
         return 0;
-    fseek(file, 0, SEEK_END);
-    size_t size = ftell(file);
-    fclose(file);
+
+    fseek(filePtr.get(), 0, SEEK_END);
+    
+    size_t size = ftell(filePtr.get());
+    
     return size;
 }
 
@@ -94,31 +96,30 @@ std::string PNGManip::getFileExtension(const std::string& fileName)
 PNGManipErrorCode PNGManip::encodeToImage() 
 {
     std::unique_ptr<FILE, decltype(&fclose)> inputFilePtr( fopen(inputFile.c_str(), "rb"), &fclose);
-    if (!inputFilePtr) {
+    if (!inputFilePtr) 
+    {
         logError("Cannot open input file: " + inputFile);
         return PNGManipErrorCode::FileNotFound;
     }
 
-    uint32_t fileSize = static_cast<uint32_t>(getFileSize(inputFile.c_str()));
-
-    std::vector<uint8_t> buffer(fileSize + sizeof(uint32_t)); // Allocate and size the buffer
+    std::vector<uint8_t> buffer( m_fileSize + sizeof(uint32_t) ); // Allocate and size the buffer
 
 	// Put the size of the file in the first 4 bytes
-    memcpy(buffer.data(), &fileSize, sizeof(uint32_t));
+    memcpy(buffer.data(), &m_fileSize, sizeof(uint32_t));
 
-    size_t bytesRead = fread(buffer.data() + sizeof(uint32_t), 1, fileSize, inputFilePtr.get());
+    size_t bytesRead = fread( buffer.data() + sizeof(uint32_t), 1, m_fileSize, inputFilePtr.get() );
 
-    if (bytesRead != fileSize) 
+    if (bytesRead != m_fileSize) 
     {
         logError("Error reading input file: " + inputFile);
         return PNGManipErrorCode::FileNotReadable;
 	}
 
 
-    size_t idx = 0;
-    for (size_t row = 0; row < pngImage.height; ++row) 
+    size_t idx{ 0 };
+    for (size_t row{ 0 }; row < pngImage.height; ++row)
     {
-        for (size_t col = 0; col < pngImage.width; ++col) 
+        for (size_t col{ 0 }; col < pngImage.width; ++col)
         {
             pixel           = pixelAt(&pngImage, row, col);
 
@@ -139,7 +140,8 @@ PNGManipErrorCode PNGManip::decodeImage()
 {
     std::unique_ptr<FILE, decltype(&fclose)> filePtr( fopen(inputFile.c_str(), "rb" ), &fclose );
 
-    if (!filePtr) {
+    if (!filePtr) 
+    {
         logError("Cannot open input file: " + inputFile);
         return PNGManipErrorCode::FileNotFound;
     }
@@ -180,12 +182,14 @@ PNGManipErrorCode PNGManip::decodeImage()
     pngImage.pixelSize  = 4;
 	pngImage.pixels.resize(static_cast<size_t>(pngImage.width * pngImage.height));
     
-    if (pngImage.pixels.empty()) {
+    if (pngImage.pixels.empty()) 
+    {
         png_destroy_read_struct(&png_ptr, &info_ptr, nullptr);
         logError("Memory allocation error for PNG pixels.");
         return PNGManipErrorCode::MemoryAllocationError;
     }
     
+
     std::cout << "[INFO] Image Dimensions:\033[36m"
         << "\nWidth:\t\t"     << pngImage.width
         << "\nHeight:\t\t"    << pngImage.height
@@ -208,13 +212,14 @@ PNGManipErrorCode PNGManip::decodeImage()
     
     png_read_image(png_ptr, row_pointers.data());
  
-
-    for (size_t row = 0; row < pngImage.height; ++row)
+    pixel_t* px{};
+    for (size_t row{ 0 }; row < pngImage.height; ++row)
     {
-        auto* rowData = rowStorage[row].data();
-        for (size_t col = 0; col < pngImage.width; ++col)
+        auto *rowData = rowStorage[row].data();
+        for (size_t col{ 0 }; col < pngImage.width; ++col)
         {
-            pixel_t* px = pixelAt(&pngImage, row, col);
+            px = pixelAt(&pngImage, row, col);
+
             px->red     = *rowData++;
             px->green   = *rowData++;
             px->blue    = *rowData++;
@@ -268,10 +273,8 @@ PNGManipErrorCode PNGManip::savePNGToFile()
     
     
     png_set_IHDR(
-        png_ptr,
-        info_ptr,
-        pngImage.width,
-        pngImage.height,
+        png_ptr,        info_ptr,
+        pngImage.width, pngImage.height,
         pngImage.pixelDepth,
         PNG_COLOR_TYPE_RGBA,
         PNG_INTERLACE_NONE,
@@ -285,20 +288,21 @@ PNGManipErrorCode PNGManip::savePNGToFile()
         std::vector<uint8_t>(pngImage.width * pngImage.pixelSize)
 	);
     
-    
-    for (size_t row = 0; row < pngImage.height; ++row)
+	pixel_t* pixel{};
+	size_t offset{ 0 };
+    for (size_t row{ 0 }; row < pngImage.height; ++row)
     {
         auto& rowVec = rowStorage[row];
 
-        for (size_t col = 0; col < pngImage.width; ++col)
+        for (size_t col{ 0 }; col < pngImage.width; ++col)
         {
-            pixel_t* pixel = pixelAt(&pngImage, row, col);
-            size_t offset = col * pngImage.pixelSize;
+            pixel = pixelAt(&pngImage, row, col);
+            offset = col * pngImage.pixelSize;
 
-            rowVec[offset] = pixel->red;
-            rowVec[offset + 1] = pixel->green;
-            rowVec[offset + 2] = pixel->blue;
-            rowVec[offset + 3] = pixel->alpha;
+            rowVec[offset]      = pixel->red;
+            rowVec[offset + 1]  = pixel->green;
+            rowVec[offset + 2]  = pixel->blue;
+            rowVec[offset + 3]  = pixel->alpha;
         }
     }
     
@@ -322,139 +326,13 @@ PNGManipErrorCode PNGManip::savePNGToFile()
 }
 
 
-/*
-PNGManipErrorCode PNGManip::saveDecodedPNGInfo()
-{
-    std::unique_ptr<FILE, decltype(&fclose)> outputFilePtr( fopen(outputFile.c_str(), "wb"), &fclose );
-    if (!outputFilePtr) 
-    {
-        logError("Cannot open output file: " + outputFile);
-        return PNGManipErrorCode::FileNotWritable;
-    }
 
-    std::string outputStr;
-	
-    if (getFileExtension(outputFile) == "txt")
-    {
-        for (size_t row = 0; row < pngImage.height; ++row)
-        {
-            for (size_t col = 0; col < pngImage.width; ++col)
-            {
-                pixel = pixelAt(&pngImage, row, col);
-
-                if (pixel->red != 0x81)
-                    outputStr.push_back(static_cast<char>(pixel->red));
-                else
-                    break;
-
-                if (pixel->green != 0x81)
-                    outputStr.push_back(static_cast<char>(pixel->green));
-                else
-                    break;
-
-                if (pixel->blue != 0x81)
-                    outputStr.push_back(static_cast<char>(pixel->blue));
-                else
-                    break;
-
-                if (pixel->alpha != 0x81)
-                    outputStr.push_back(static_cast<char>(pixel->alpha));
-                else
-                    break;
-            }
-        }
-
-        fwrite(outputStr.data(), 1, outputStr.size(), outputFilePtr.get());
-
-    }
-    else if (getFileExtension(outputFile) == "pdf" )
-    {
-        for (size_t row = 0; row < pngImage.height; ++row)
-        {
-            for (size_t col = 0; col < pngImage.width; ++col)
-            {
-                pixel = pixelAt(&pngImage, row, col);
-
-                outputStr.push_back(static_cast<char>(pixel->red));
-                outputStr.push_back(static_cast<char>(pixel->green));
-                outputStr.push_back(static_cast<char>(pixel->blue));
-                outputStr.push_back(static_cast<char>(pixel->alpha));
-            }
-        }
-
-        fwrite(outputStr.data(), 1, outputStr.size(), outputFilePtr.get());
-
-    }/*
-    else if ( getFileExtension(outputFile) == "docx" )
-    {
-        std::vector<char> docxBuffer;
-
-        for (size_t row = 0; row < pngImage.height; ++row)
-        {
-            for (size_t col = 0; col < pngImage.width; ++col)
-            {
-                pixel = pixelAt(&pngImage, row, col);
-
-                docxBuffer.push_back(static_cast<char>(pixel->red));
-                docxBuffer.push_back(static_cast<char>(pixel->green));
-                docxBuffer.push_back(static_cast<char>(pixel->blue));
-                docxBuffer.push_back(static_cast<char>(pixel->alpha));
-            }
-        }
-
-
-        auto findEOCD = [&](const std::vector<char>& buffer) -> size_t {
-            std::vector<char> eocdSignature = { 0x50, 0x4b, 0x05, 0x06 };
-
-            for (size_t i = buffer.size() > 22 ? buffer.size() - 22 : 0; i < buffer.size() - 3; ++i)
-            {
-                if (std::equal(eocdSignature.begin(), eocdSignature.end(), buffer.begin() + i)) {
-                    return i + 22;
-                }
-            }
-            return 0;
-        };
-
-
-		// Print last 50 bytes from docxBuffer for debugging
-		if (docxBuffer.size() >= 50) {
-			std::cout << "\n\033[33m[DEBUG] Last 50 bytes of decoded DOCX data:\n";
-            for (size_t i = docxBuffer.size() - 50; i < docxBuffer.size(); ++i) {
-                printf("%02X ", static_cast<unsigned char>(docxBuffer[i]));
-			}
-			std::cout << "\n\033[0m";
-        }
-		//fwrite(docxBuffer.data(), 1, docxBuffer.size(), outputFilePtr);
-
-
-   //     size_t endPos = findEOCD(docxBuffer);
-
-   //     if (!endPos)
-			//endPos = docxBuffer.size();
-
-   //     fwrite(docxBuffer.data(), 1, endPos, outputFilePtr);
-		fclose(outputFilePtr);
-    }
-    else
-    {
-        logError("Unsupported output file format. Please use .txt or .pdf extension.");
-        return PNGManipErrorCode::FileNotWritable;
-	}
-    
-    
-    
-    if (terminalOutput == "TRUE")
-        std::cout << "\nDecoded Output:\n" << outputStr << std::endl;
-    
-    
-    return PNGManipErrorCode::Success;
-}
-*/
 
 PNGManipErrorCode PNGManip::saveDecodedPNGInfo()
 {
     std::unique_ptr<FILE, decltype(&fclose)> outputFilePtr(fopen(outputFile.c_str(), "wb"), &fclose);
-    if (!outputFilePtr) {
+    if (!outputFilePtr) 
+    {
         logError("Cannot open output file: " + outputFile);
         return PNGManipErrorCode::FileNotWritable;
     }
@@ -463,16 +341,18 @@ PNGManipErrorCode PNGManip::saveDecodedPNGInfo()
     std::vector<uint8_t> buffer;
     buffer.reserve(static_cast<size_t>(pngImage.width * pngImage.height * 4));
     
-    for (size_t row = 0; row < pngImage.height; ++row) 
+    pixel_t* px{};
+    for (size_t row{ 0 }; row < pngImage.height; ++row) 
     {
-        for (size_t col = 0; col < pngImage.width; ++col) 
+        for (size_t col{ 0 }; col < pngImage.width; ++col)
         {
-            pixel_t* px = pixelAt(&pngImage, row, col);
+            px = pixelAt(&pngImage, row, col);
 
-            buffer.push_back(px->red);
-            buffer.push_back(px->green);
-            buffer.push_back(px->blue);
-            buffer.push_back(px->alpha);
+            //buffer.assign({ px->red, px->green, px->blue, px->alpha });
+			buffer.push_back(px->red);
+			buffer.push_back(px->green);
+			buffer.push_back(px->blue);
+			buffer.push_back(px->alpha);
         }
     }
 
@@ -483,11 +363,10 @@ PNGManipErrorCode PNGManip::saveDecodedPNGInfo()
         return PNGManipErrorCode::DecodingError;
     }
 
+    uint32_t fileSize{};
+	memcpy(&fileSize, buffer.data(), sizeof(uint32_t));
 
-    uint32_t fileSize;
-    memcpy(&fileSize, buffer.data(), sizeof(uint32_t));
-
-    if (fileSize > buffer.size() - sizeof(uint32_t)) 
+    if (fileSize > buffer.size() - sizeof(uint32_t))
     {
         logError("Invalid file size in header.");
         return PNGManipErrorCode::DecodingError;
@@ -499,7 +378,7 @@ PNGManipErrorCode PNGManip::saveDecodedPNGInfo()
     std::cout << "\n[INFO] Decoded file written: \033[36m"
         << static_cast<float>(fileSize / 1024.0) << " KB\033[0m" << std::endl;
 
-    if (terminalOutput == "TRUE") 
+    if (terminalOutput._Equal("TRUE")) 
     {
         std::cout << "\nDecoded Output:\n";
         std::cout.write(reinterpret_cast<const char*>(buffer.data() + sizeof(uint32_t)), fileSize);
@@ -587,33 +466,34 @@ void PNGManip::decode()
 */
 
 PNGManip::PNGManip(const std::string& type, const std::string& input, const std::string& output, const std::string& terminalDisp) : 
-	processType(type),
-	inputFile(input), 
-	outputFile(output),
-	pixel(nullptr),
+    processType{ type },
+	inputFile{ input }, 
+	outputFile{ output },
+	pixel{ nullptr },
     pngImage{},
-	terminalOutput(terminalDisp)
+    m_fileSize( static_cast<uint32_t>(getFileSize(inputFile.c_str())) ),
+	terminalOutput{ terminalDisp }
 {
-	if (processType == "ENCODE")
+	if (processType._Equal("ENCODE"))
 	{
 		// Get dimensions
 		const size_t headerSize = 8;
-		const size_t fileSize = getFileSize(inputFile.c_str());
+		m_fileSize = static_cast<uint32_t>( getFileSize(inputFile.c_str()) );
 
-		auto dimensions = getDimensions( fileSize + headerSize );
+		auto dimensions = getDimensions( m_fileSize + headerSize );
 		pngImage.width = static_cast<uint16_t>(dimensions.first);
 		pngImage.height = static_cast<uint16_t>(dimensions.second);
 
 		std::cout << "[INFO] Resultant Image Dimensions: \033[36m" << pngImage.width << " x " << pngImage.height << "\033[0m" << std::endl;
 
-		pngImage.pixelSize = static_cast<png_byte>(4);
 		pngImage.pixelDepth = static_cast<png_byte>(8);
+		pngImage.pixelSize = static_cast<png_byte>(4);
 		pngImage.pixels.resize(static_cast<size_t>(pngImage.width * pngImage.height));
 
 	}
-	else if (processType == "DECODE")
+	else if (processType._Equal("DECODE"))
 	{
-		// Do nothing here
+        m_fileSize = static_cast<uint32_t>( getFileSize(inputFile.c_str()) );
 	}
 	else
 	{
